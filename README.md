@@ -27,17 +27,15 @@ Or install it yourself as:
 
 ## Usage
 
-The Markdown can come from a file or from [your program's `__END__` section](http://ruby-doc.org/docs/keywords/1.9/Object.html#method-i-__END__).
+When it's time to display your program's usage call `MarkdownUsage.print` or `MarkdownUsage()` with the [desired configuration options](#options).
+By default it will look for the usage in [the invoking code's `__END__` section](http://ruby-doc.org/docs/keywords/1.9/Object.html#method-i-__END__),
+output it to `stdout`, and call `exit 0`.
 
-By default `MarkdownUsage.print` will output to `stderr` and call
-`exit 0`. To change this see [Options](#options).
-
-Alternatively you can call `MarkdownUsage()`.
+For more info see [Options](#options).
 
 ### Using `__END__`
 
-Add the Markdown to your script and call `MarkdownUsage.print` when
-it's time to display the usage:
+Here's an example script:
 
 ```rb
 #!/usr/bin/ruby
@@ -78,32 +76,36 @@ Map is a list of blah pairs
 
 ```
 
-Note that `OptionParser` is in the example but is not required.
-
 ### Using a File
 
-To use a file specify its path:
-
-```rb
-MarkdownUsage.print(:source => "path/to/README")
-```
-
-In most cases you'll want to extract the program's usage from the `Usage`
-section of your project's README:
+To extract the program's usage from the `Usage` section of your project's README:
 
 ```rb
 MarkdownUsage.print(:source => "README", :sections => "Usage")
 ```
 
-This will extract a Markdown formatted README from your project's root directory.
+This will look for a file name `README.md` or `README.markdown` in your project's root directory.
 
-If your project is released as a gem, add `README.md` (or
-`README.markdown`) to the gem's list of files:
+Multiple sections can be extracted:
+
+```rb
+MarkdownUsage.print(:source => "README", :sections => %w[Usage Support])
+```
+
+If your project is released as a gem, be sure to add the README to the gem's list of files:
 
 ```rb
 s.extra_rdoc_files = %w[README.md]
 s.files = Dir["lib/**/*.rb"] + s.test_files + s.extra_rdoc_files
 ```
+
+To use a different file specify its path:
+
+```rb
+MarkdownUsage.print(:source => "path/to/README.md")
+```
+
+When specifying a path you must provide the appropriate extension.
 
 ### Options
 
@@ -124,7 +126,10 @@ The usage will *always* contain terminal escape codes.
 
 #### `:sections`
 
-Sections to extract from `:output`. These must be the headings used in the README.
+Sections to extract from `:output`. These must be the headings used in the README, without
+the leading format characters.
+
+Can be a `String` or an `Array` of strings.
 
 #### `:source`
 
@@ -132,8 +137,7 @@ Location of usage Markdown to print, defaults to your programs's  `__END__` sect
 
 To load a Markdown `README` from your project's root directory set this to `README`.
 
-Relative paths will be loaded relative to your project's root directory. This assumes
-your executable is in `ROOT/bin`.
+Relative paths will be loaded relative to your project's root directory.
 
 #### `:raise_errors`
 
@@ -144,7 +148,6 @@ If `false` a warning is sent to `stderr` instead.
 
 - [`TTY::Markdown`](https://github.com/piotrmurach/tty-markdown) - without this there would be no `MarkdownUsage`
 - Perl's [`Pod::Usage`](https://metacpan.org/pod/Pod::Usage) - the inspiration for `MarkdownUsage`
-
 
 ## License
 
