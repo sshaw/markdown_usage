@@ -45,7 +45,7 @@ module MarkdownUsage
       return source if File.exists?(source)
 
       roots = [ caller_root =~ /\A(.+):\d+:in\s+`/ ? File.dirname($1) : "." ]
-      roots << File.dirname(roots[0]) if File.basename(roots[0]) == "bin"
+      roots << File.dirname(roots[0]) if %w[bin exe].include?(File.basename(roots[0]))
 
       if source != "README"
         roots.map { |dir| File.join(dir, source) }.find { |path| File.exists?(path) }

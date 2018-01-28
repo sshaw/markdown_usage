@@ -9,6 +9,8 @@ your program's usage look like this:
 
 ![MarkdownUsage output](usage.png)
 
+If your program does not use Ruby or you want to minimize your dependencies use [the `markdown_usage` Script](#markdown_usage-script).
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -145,6 +147,37 @@ Relative paths will be loaded relative to your project's root directory.
 
 If `true` a `MarkdownUsage::Error` will be raised when `MarkdownUsage` encounters a problem.
 If `false` a warning is sent to `stderr` instead.
+
+## `markdown_usage` Script
+
+**markdown_usage** - embed or output a colorized version of your program's usage from a Markdown document
+
+### Usage
+
+```
+markdown_usage [-h] [-s sections] [-o output] markdown_doc
+```
+
+`markdown_doc` is the Markdown to use.
+
+- `-h` show this help menu
+- `-o` `output`   where to output the colorized usage, defaults to `stdout`
+- `-s` `sections` sections to extract from `markdown_doc`
+
+#### `output`
+
+This can be a file or a script. If it's a script it will be added to the script's data section.
+Existing data section context will be overwritten.
+
+We assume `output` is a script if one of the following are true:
+
+- It ends in `.rb` or `.pl` (these languages support data sections)
+- It is executable
+- It contains  *nix shebang on the first line (e.g., `#!/bin/env ruby`)
+
+#### `sections`
+
+These must be the headings without the leading format characters. Multiple sections can be separated by a comma.
 
 ## See Also
 
