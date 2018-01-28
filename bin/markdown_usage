@@ -10,8 +10,7 @@ require "markdown_usage"
 def script?(path)
   # Other langs that support DATA sections?
   %w[rb pl].include?(File.extname(path)) ||
-    File.executable?(path) ||
-    File.file?(path) && File.open(path) { |io| return io.gets =~ /\A#!/ }
+    File.file?(path) && File.open(path) { |io| return io.gets =~ /\A#!.*\b(?:perl|ruby)/ }
 end
 
 def usage(status = 1)
@@ -23,7 +22,7 @@ options = { :exit => false }
 
 while ARGV.any?
   case ARGV[0]
-  when "-h"
+  when "-h", "--help"
     usage(0)
   when "-s"
     ARGV.shift
@@ -41,7 +40,7 @@ end
 usage unless options[:source]
 
 unless output
-  MarkdownUsage(options.merge(:output => $stdio))
+  MarkdownUsage(options.merge(:output => $stdout))
   exit
 end
 
@@ -59,16 +58,16 @@ code = data.split(/^__END__$/, 2)
 code[1] = io.string
 
 out = Tempfile.new("MarkdownUsage")
-out << code[0]
-out << "\n__END__\n"
+out.puts code[0]
+out.puts "__END__"
 out << code[1]
 out.close
 
-# FIXME: restore permissions
+# Will this reset permissions on Windows?
+FileUtils.chmod(File.stat(output).mode, out.path)
 FileUtils.mv(out.path, output)
 
 out.unlink
-
 
 __END__
   [36;1m[38;5;230mmarkdown_usage[39m Script[0m
@@ -79,7 +78,7 @@ __END__
 
     [38;5;230mmarkdown_usage [-h] [-s sections] [-o output] markdown_doc[39m
 
-    [38;5;230mmarkdown_doc[39m is the Markdown to use.
+    [38;5;230mmarkdown_doc[39m is a file containing the Markdown to use.
 
     [33m●[0m [38;5;230m-h[39m show this help menu
     [33m●[0m [38;5;230m-o[39m [38;5;230moutput[39m   where to output the colorized usage, defaults to [38;5;230mstdout[39m
@@ -88,15 +87,31 @@ __END__
       [36;1m[38;5;230moutput[39m[0m
 
       This can be a file or a script. If its a script it will be added to the scripts data section.
-Existing data section context will be overwritten.
+Existing data section content will be overwritten.
 
       We assume [38;5;230moutput[39m is a script if one of the following are true:
 
       [33m●[0m It ends in [38;5;230m.rb[39m or [38;5;230m.pl[39m (these languages support data sections)
-      [33m●[0m It is executable
-      [33m●[0m It contains  *nix shebang on the first line (e.g., [38;5;67;04m#!/bin/env ruby[39;00m)
+      [33m●[0m It contains  *nix shebang on the first line for [38;5;230mruby[39m or [38;5;153;01mperl[39;00m e.g., [38;5;67;04m#!/usr/bin/env ruby[39;00m
 
       [36;1m[38;5;230msections[39m[0m
 
-      These must be the headings without the leading format characters. Multiple sections can be separated by a comma.
+      These must be the headings without leading or trailing heading format characters.
+If the heading text has other formatting characters, they must be included (see [34;4m#examples[0m).
+
+      Multiple sections can be separated by a comma.
+
+    [36;1mExamples[0m
+
+    Output the section [38;5;230mUsage[39m from [38;5;230mREADME.md[39m to [38;5;230mUSAGE[39m:
+
+    [38;5;230mmarkdown_usage -s Usage README.md > USAGE[39m
+
+    Output the sections [38;5;230mUsage[39m and [38;5;230mMore Info[39m from [38;5;230mREADME.md[39m to [38;5;230mUSAGE[39m:
+
+    [38;5;230mmarkdown_usage -s 'Usage,More Info' README.md > USAGE[39m
+
+    Add the following formatted section to the data section of [38;5;230mscript.rb[39m:
+
+    [38;5;230mmarkdown_usage -s '`markdown_usage` Script' -o script.rb README.markdown[39m
 

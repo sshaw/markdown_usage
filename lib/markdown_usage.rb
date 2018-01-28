@@ -13,7 +13,7 @@ module MarkdownUsage
   class << self
     #
     # Print the calling program's usage based on +options+.
-    # See README for a list of options.
+    # See README for a list of +options+.
     #
     def print(options = nil)
       options ||= {}
@@ -98,7 +98,7 @@ module MarkdownUsage
 end
 
 #
-# Calls MarkdownUsage.print. See README for options.
+# Calls MarkdownUsage.print. See README for +options+.
 #
 def MarkdownUsage(options = nil)
   MarkdownUsage.print(options)

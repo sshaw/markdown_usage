@@ -32,7 +32,7 @@ Or install it yourself as:
 ## Usage
 
 When it's time to display your program's usage call `MarkdownUsage.print` or `MarkdownUsage()` with the [desired configuration options](#options).
-By default it will look for the usage in [the invoking code's `__END__` section](http://ruby-doc.org/docs/keywords/1.9/Object.html#method-i-__END__),
+By default it will look for the usage in [the invoking code's data section](http://ruby-doc.org/docs/keywords/1.9/Object.html#method-i-__END__),
 output it to `stdout`, and call `exit 0`.
 
 For more info see [Options](#options).
@@ -96,13 +96,6 @@ Multiple sections can be extracted:
 MarkdownUsage.print(:source => "README", :sections => %w[Usage Support])
 ```
 
-If your project is released as a gem, be sure to add the README to the gem's list of files:
-
-```rb
-s.extra_rdoc_files = %w[README.md]
-s.files = Dir["lib/**/*.rb"] + s.test_files + s.extra_rdoc_files
-```
-
 To use a different file specify its path:
 
 ```rb
@@ -130,14 +123,16 @@ The usage will *always* contain terminal escape codes.
 
 #### `:sections`
 
-Sections to extract from the `:source`. These must be the headings without the leading format
-characters.
+Sections to extract from the `:source`. These must be the headings without the
+leading or trailing heading format characters.
+
+If the heading text has other formatting characters, they must be included (see [Examples](#examples)).
 
 Can be a `String` or an `Array` of strings.
 
 #### `:source`
 
-Location of usage Markdown to print, defaults to your programs's  `__END__` section.
+Location of usage Markdown to print, defaults to your program's data (`__END__`) section.
 
 To load a Markdown `README` from your project's root directory set this to `README`.
 
@@ -158,7 +153,7 @@ If `false` a warning is sent to `stderr` instead.
 markdown_usage [-h] [-s sections] [-o output] markdown_doc
 ```
 
-`markdown_doc` is the Markdown to use.
+`markdown_doc` is a file containing the Markdown to use.
 
 - `-h` show this help menu
 - `-o` `output`   where to output the colorized usage, defaults to `stdout`
@@ -167,17 +162,39 @@ markdown_usage [-h] [-s sections] [-o output] markdown_doc
 #### `output`
 
 This can be a file or a script. If it's a script it will be added to the script's data section.
-Existing data section context will be overwritten.
+Existing data section content will be overwritten.
 
 We assume `output` is a script if one of the following are true:
 
 - It ends in `.rb` or `.pl` (these languages support data sections)
-- It is executable
-- It contains  *nix shebang on the first line (e.g., `#!/bin/env ruby`)
+- It contains  *nix shebang on the first line for `ruby` or `perl` e.g., `#!/usr/bin/env ruby`
 
 #### `sections`
 
-These must be the headings without the leading format characters. Multiple sections can be separated by a comma.
+These must be the headings without leading or trailing heading format characters.
+If the heading text has other formatting characters, they must be included (see [Examples](#examples)).
+
+Multiple sections can be separated by a comma.
+
+### Examples
+
+Output the section `Usage` from `README.md` to `USAGE`:
+
+```
+markdown_usage -s Usage README.md > USAGE
+```
+
+Output the sections `Usage` and `More Info` from `README.md` to `USAGE`:
+
+```
+markdown_usage -s 'Usage,More Info' README.md > USAGE
+```
+
+Add the following formatted section to the data section of `script.rb`:
+
+```
+markdown_usage -s '`markdown_usage` Script' -o script.rb README.markdown
+```
 
 ## See Also
 
