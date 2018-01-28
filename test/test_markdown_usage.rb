@@ -10,7 +10,7 @@ class TestMarkdownUsage < Minitest::Test
   end
 
   def test_usage_extraxted_from___END___by_default
-    assert_equal TTY::Markdown.parse("# Section 1\n1\n"), ruby(fixture("script.rb"))
+    assert_equal TTY::Markdown.parse("# 1\n1\nFoo\n"), ruby(fixture("script.rb"))
   end
 
   def test_exits_0_by_default
@@ -43,18 +43,52 @@ class TestMarkdownUsage < Minitest::Test
   end
 
   def test_single_section_extracted_form_source
-    output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => fixture("README1.md"), "MU_TEST_SECTIONS" => "Section 1,Section 3")
-    assert_equal TTY::Markdown.parse("# Section 1\n1\n## Section 1.2\n1.2\n# Section 3\n3\n"), output
+    output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => fixture("README1.md"), "MU_TEST_SECTIONS" => "1,3")
+    assert_equal TTY::Markdown.parse("# 1\n1\n## 1.2\n1.2\n# 3\n3\n"), output
+  end
+
+  def test_usage_extracted_form_README_source
+    output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => "README")
+    assert_equal TTY::Markdown.parse("# Foo"), output
+  end
+
+  def test_usage_extracted_form_README_in_project_root
+    assert_equal TTY::Markdown.parse("## 1.2\n1.2\n"), ruby(fixture("bin/script.rb"))
   end
 
   def test_multiple_sections_extracted_form_source
-    output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => fixture("README1.md"), "MU_TEST_SECTIONS" => "Section 3")
-    assert_equal TTY::Markdown.parse("# Section 3\n3\n"), output
+    output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => fixture("README1.md"), "MU_TEST_SECTIONS" => "3")
+    assert_equal TTY::Markdown.parse("# 3\n3\n"), output
   end
 
-  def test_extracts_level1_headings
-    output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => fixture("README2.md"), "MU_TEST_SECTIONS" => "Section 1")
-    assert_equal TTY::Markdown.parse_file(fixture("README2.md")), output
+  def test_extracts_level1_sections
+    output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => fixture("README2.md"), "MU_TEST_SECTIONS" => "1")
+    assert_equal TTY::Markdown.parse("1\n=\nA\n"), output
+  end
+
+  def test_extracts_level2_sections
+    output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => fixture("README2.md"), "MU_TEST_SECTIONS" => "2")
+    assert_equal TTY::Markdown.parse("2\n--\nB\n\n"), output
+  end
+
+  def test_extracts_level3_sections
+    output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => fixture("README2.md"), "MU_TEST_SECTIONS" => "3")
+    assert_equal TTY::Markdown.parse("### 3\nC\n\n"), output
+  end
+
+  def test_extracts_level4_sections
+    output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => fixture("README2.md"), "MU_TEST_SECTIONS" => "4")
+    assert_equal TTY::Markdown.parse("#### 4 ####\nD\n\n"), output
+  end
+
+  def test_extracts_level5_sections
+    output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => fixture("README2.md"), "MU_TEST_SECTIONS" => "5")
+    assert_equal TTY::Markdown.parse("##### 5\nE\n\n"), output
+  end
+
+  def test_extracts_level6_sections
+    output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => fixture("README2.md"), "MU_TEST_SECTIONS" => "6")
+    assert_equal TTY::Markdown.parse("###### 6 ######\nF\n\n"), output
   end
 
   def fixture(basename)

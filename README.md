@@ -1,5 +1,7 @@
 # MarkdownUsage
 
+[![Build Status](https://secure.travis-ci.org/sshaw/markdown_usage.svg)](https://secure.travis-ci.org/sshaw/markdown_usage)
+
 Output a colorized version of your program's usage using a Markdown document embedded in your script, from your project's README, or anywhere else.
 
 `MarkdownUsage` uses [`TTY::Markdown`](https://github.com/piotrmurach/tty-markdown) to make
@@ -126,8 +128,8 @@ The usage will *always* contain terminal escape codes.
 
 #### `:sections`
 
-Sections to extract from `:output`. These must be the headings used in the README, without
-the leading format characters.
+Sections to extract from the `:source`. These must be the headings without the leading format
+characters.
 
 Can be a `String` or an `Array` of strings.
 

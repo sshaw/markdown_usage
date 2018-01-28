@@ -18,5 +18,6 @@ options[:source] = ENV["MU_TEST_SOURCE"] if ENV["MU_TEST_SOURCE"]
 MarkdownUsage.print(options)
 puts "no_exit"
 __END__
-# Section 1
+# 1
 1
+Foo

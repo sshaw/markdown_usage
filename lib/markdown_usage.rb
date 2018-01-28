@@ -4,7 +4,17 @@ require "markdown_usage/version"
 module MarkdownUsage
   Error = Class.new(StandardError)
 
+  HEADING = /\A(\#{1,6})/
+  ALT_HEADING = /\A([-=]+)\s*\Z/
+  ALT_HEADING_LEVELS = { "=" => 1, "-" => 2 }.freeze
+
+  EXTENSIONS = %w[md markdown].freeze
+
   class << self
+    #
+    # Print the calling program's usage based on +options+.
+    # See README for a list of options.
+    #
     def print(options = nil)
       options ||= {}
 
@@ -14,35 +24,43 @@ module MarkdownUsage
 
       error("Usage document cannot be found", raise_errors) and return unless defined?(DATA) || options[:source]
 
-      root = find_root_directory
-
       if !options[:source]
         lines = DATA.readlines
       else
-        source = options[:source] == "README" ?
-                   %w[md markdown].map { |ext| File.join(root, "README.#{ext}") }.find { |path| File.exists?(path) } :
-                   File.exists?(options[:source]) ? options[:source] : File.join(root, options[:source])
-
+        source = find_readme(options[:source], caller[0])
         error("Cannot find usage source: #{options[:source]}", raise_errors) and return unless source && File.exists?(source)
+
         lines = File.readlines(source)
       end
 
       output.puts TTY::Markdown.parse(extract_usage(lines, options[:sections]))
       exit exitcode unless exitcode == false
     rescue => e
-      error(e, raise_errors)
+     error(e, raise_errors)
     end
 
     private
+
+    def find_readme(source, caller_root)
+      return source if File.exists?(source)
+
+      roots = [ caller_root =~ /\A(.+):\d+:in\s+`/ ? File.dirname($1) : "." ]
+      roots << File.dirname(roots[0]) if File.basename(roots[0]) == "bin"
+
+      if source != "README"
+        roots.map { |dir| File.join(dir, source) }.find { |path| File.exists?(path) }
+      else
+        roots.each do |dir|
+          readme = EXTENSIONS.map { |ext| File.join(dir, "README.#{ext}") }.find { |path| File.exists?(path) }
+          return readme if readme
+        end
+      end
+    end
 
     def error(message, raise_errors = false)
       raise Error, message if raise_errors
       warn "MarkdownUsage warning: #{message}"
       true
-    end
-
-    def find_root_directory
-      caller[2] =~ /\A(.+):\d+:in\s+`/ ? File.dirname($1) : "."
     end
 
     def extract_usage(lines, sections)
@@ -51,19 +69,23 @@ module MarkdownUsage
 
       usage = ""
       while lines.any?
-        lead = nil
-
         sections.each do |pat|
-          next unless lines[0] =~ %r|\A(\#{1,6}\s*)#{pat}|
-          lead = $1
+          next unless lines[0] =~ /#{HEADING}\s*#{pat}/ || lines[0] =~ /\A#{pat}/ && lines[1] =~ ALT_HEADING
+
+          # TTY::Markdown (Kramdown) chooses the last char to denote heading level
+          cur_level = lines[0][0] == "#" ? $1.size : ALT_HEADING_LEVELS[$1[-1]]
+
+          usage << lines.shift
 
           while lines.any?
-            # Possible to use flip-flop without assigning to this?
-            $_ = lines[0]
-            if %r|\A#{lead}#{pat}| ... %r|\A#{lead}(?!#{pat})|
-              break if lines[0] =~ %r|\A#{lead}(?!#{pat})|
-              usage << lines.shift
-            end
+            next_level = if lines[0] =~ /#{HEADING}\s*\S/
+                           $1.size
+                         elsif lines[0] =~ /./ && lines[1] =~ ALT_HEADING
+                           ALT_HEADING_LEVELS[$1[-1]]
+                         end
+
+            break if next_level && next_level <= cur_level
+            usage << lines.shift
           end
         end
 
@@ -75,6 +97,9 @@ module MarkdownUsage
   end
 end
 
+#
+# Calls MarkdownUsage.print. See README for options.
+#
 def MarkdownUsage(options = nil)
   MarkdownUsage.print(options)
 end
