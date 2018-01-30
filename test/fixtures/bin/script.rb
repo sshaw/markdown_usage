@@ -1,2 +1,4 @@
 require "markdown_usage"
-MarkdownUsage.print(:source => "README1.md", :sections => "1.2")
+source   = ENV["MU_TEST_SOURCE"] || "README"
+sections = ENV["MU_TEST_SECTIONS"]
+MarkdownUsage.print(:source => source, :sections => sections)

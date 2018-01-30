@@ -37,26 +37,32 @@ class TestMarkdownUsage < Minitest::Test
     assert_match /\bMarkdownUsage warning:/, output
   end
 
-  def test_usage_extracted_form_source
+  def test_usage_extracted_from_source
     output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => fixture("README1.md"))
     assert_equal TTY::Markdown.parse_file(fixture("README1.md")), output
   end
 
-  def test_single_section_extracted_form_source
+  def test_single_section_extracted_from_source
     output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => fixture("README1.md"), "MU_TEST_SECTIONS" => "1,3")
     assert_equal TTY::Markdown.parse("# 1\n1\n## 1.2\n1.2\n# 3\n3\n"), output
   end
 
-  def test_usage_extracted_form_README_source
+  def test_usage_extracted_from_README_source
     output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => "README")
-    assert_equal TTY::Markdown.parse("# Foo"), output
+    assert_equal TTY::Markdown.parse_file(fixture("README.markdown")), output
   end
 
-  def test_usage_extracted_form_README_in_project_root
-    assert_equal TTY::Markdown.parse("## 1.2\n1.2\n"), ruby(fixture("bin/script.rb"))
+  def test_usage_extracted_from_README_source_in_project_root
+    output = ruby(fixture("bin/script.rb"), "MU_TEST_SOURCE" => "README")
+    assert_equal TTY::Markdown.parse_file(fixture("README.markdown")), output
   end
 
-  def test_multiple_sections_extracted_form_source
+  def test_usage_extracted_from_source_in_project_root
+    output = ruby(fixture("bin/script.rb"), "MU_TEST_SOURCE" => "README1.md", "MU_TEST_SECTIONS" => "1.2")
+    assert_equal TTY::Markdown.parse("## 1.2\n1.2\n"), output
+  end
+
+  def test_multiple_sections_extracted_from_source
     output = ruby(fixture("script.rb"), "MU_TEST_SOURCE" => fixture("README1.md"), "MU_TEST_SECTIONS" => "3")
     assert_equal TTY::Markdown.parse("# 3\n3\n"), output
   end

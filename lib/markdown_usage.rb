@@ -8,6 +8,8 @@ module MarkdownUsage
   ALT_HEADING = /\A([-=]+)\s*\Z/
   ALT_HEADING_LEVELS = { "=" => 1, "-" => 2 }.freeze
 
+  STACKTRACE = /\A(.+):\d+:in\s+`(.+)'/
+
   EXTENSIONS = %w[md markdown].freeze
 
   class << self
@@ -27,8 +29,9 @@ module MarkdownUsage
       if !options[:source]
         lines = DATA.readlines
       else
-        source = find_readme(options[:source], caller[0])
-        error("Cannot find usage source: #{options[:source]}", raise_errors) and return unless source && File.exists?(source)
+
+        source = find_readme(options[:source], find_root_directory)
+        error("Cannot find usage source: #{options[:source]}", raise_errors) and return unless source
 
         lines = File.readlines(source)
       end
@@ -36,15 +39,29 @@ module MarkdownUsage
       output.puts TTY::Markdown.parse(extract_usage(lines, options[:sections]))
       exit exitcode unless exitcode == false
     rescue => e
-     error(e, raise_errors)
+      error(e, raise_errors)
     end
 
     private
 
+    def find_root_directory
+      # caller[0] = MarkdownUsage.print
+      # caller[1] = May be caller or MarkdownUsage(), skip the latter
+      # caller[2] = May be caller
+      root = "."
+      return root unless caller[1] =~ STACKTRACE
+
+      root = File.dirname($1)
+      return root if $2 != "MarkdownUsage"
+
+      root = File.dirname($1) if caller[2] =~ STACKTRACE
+      root
+    end
+
     def find_readme(source, caller_root)
       return source if File.exists?(source)
 
-      roots = [ caller_root =~ /\A(.+):\d+:in\s+`/ ? File.dirname($1) : "." ]
+      roots = [ caller_root ]
       roots << File.dirname(roots[0]) if %w[bin exe].include?(File.basename(roots[0]))
 
       if source != "README"
@@ -54,6 +71,8 @@ module MarkdownUsage
           readme = EXTENSIONS.map { |ext| File.join(dir, "README.#{ext}") }.find { |path| File.exists?(path) }
           return readme if readme
         end
+
+        nil
       end
     end
 

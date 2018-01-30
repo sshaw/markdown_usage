@@ -9,7 +9,7 @@ your program's usage look like this:
 
 ![MarkdownUsage output](usage.png)
 
-If your program does not use Ruby or you want to minimize your dependencies use [the `markdown_usage` Script](#markdown_usage-script).
+If your program does not use Ruby or you want to minimize your dependencies use [the `markdown_usage` Script](#markdown_usage-command).
 
 ## Installation
 
@@ -80,6 +80,12 @@ Map is a list of blah pairs
 
 ```
 
+
+If you're using this and releasing your script as a gem it must be installed via `gem install --no-wrappers my_gem`
+Otherwise, the data section will not be available to due the wrapper script added by RubyGems.
+
+In this case it's better to use a file for the usage
+
 ### Using a File
 
 To extract the program's usage from the `Usage` section of your project's README:
@@ -143,14 +149,14 @@ Relative paths will be loaded relative to your project's root directory.
 If `true` a `MarkdownUsage::Error` will be raised when `MarkdownUsage` encounters a problem.
 If `false` a warning is sent to `stderr` instead.
 
-## `markdown_usage` Script
+## `markdown_usage` Command
 
-**markdown_usage** - embed or output a colorized version of your program's usage from a Markdown document
+Embed or output a colorized version of your program's usage from a Markdown document.
 
 ### Usage
 
 ```
-markdown_usage [-h] [-s sections] [-o output] markdown_doc
+markdown_usage [-hv] [-s sections] [-o output] markdown_doc
 ```
 
 `markdown_doc` is a file containing the Markdown to use.
@@ -158,6 +164,7 @@ markdown_usage [-h] [-s sections] [-o output] markdown_doc
 - `-h` show this help menu
 - `-o` `output`   where to output the colorized usage, defaults to `stdout`
 - `-s` `sections` sections to extract from `markdown_doc`
+- `-v` show the version
 
 #### `output`
 
@@ -193,7 +200,7 @@ markdown_usage -s 'Usage,More Info' README.md > USAGE
 Add the following formatted section to the data section of `script.rb`:
 
 ```
-markdown_usage -s '`markdown_usage` Script' -o script.rb README.markdown
+markdown_usage -s '`markdown_usage` Command' -o script.rb README.md
 ```
 
 ## See Also
