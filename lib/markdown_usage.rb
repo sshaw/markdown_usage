@@ -29,7 +29,6 @@ module MarkdownUsage
       if !options[:source]
         lines = DATA.readlines
       else
-
         source = find_readme(options[:source], find_root_directory)
         error("Cannot find usage source: #{options[:source]}", raise_errors) and return unless source
 

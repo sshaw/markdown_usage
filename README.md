@@ -13,9 +13,13 @@ If your program does not use Ruby or you want to minimize your dependencies use 
 
 ## Installation
 
-Add this line to your application's Gemfile:
+[Ruby](https://www.ruby-lang.org/en/downloads/) is required.
 
-**Note: gem is not yet published**
+MarkdownUsage can be installed via RubyGems:
+
+    $ gem install markdown_usage
+
+Or via Bundler. Add this line to your application's `Gemfile`:
 
 ```ruby
 gem "markdown_usage"
@@ -24,10 +28,6 @@ gem "markdown_usage"
 And then execute:
 
     $ bundle
-
-Or install it yourself as:
-
-    $ gem install markdown_usage
 
 ## Usage
 
@@ -94,7 +94,7 @@ To extract the program's usage from the `Usage` section of your project's README
 MarkdownUsage.print(:source => "README", :sections => "Usage")
 ```
 
-This will look for a file name `README.md` or `README.markdown` in your project's root directory.
+This will look for a file named `README.md` or `README.markdown` in your project's root directory.
 
 Multiple sections can be extracted:
 
